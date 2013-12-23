@@ -1,7 +1,12 @@
 CC	?= gcc
 STRIP ?= strip
-CFLAGS ?= --std=c99 -fshort-wchar -Os
-LDFLAGS += -lxcb
+CFLAGS = -std=c99 -fshort-wchar -Os
+LDFLAGS = -lxcb
+XINERAMA ?= 0
+ifneq "$(XINERAMA)" "0"
+	LDFLAGS += -lxcb-xinerama
+	CFLAGS  += -DXINERAMA=${XINERAMA}
+endif
 CFDEBUG = -g3 -pedantic -Wall -Wunused-parameter -Wlong-long\
 		  -Wsign-conversion -Wconversion -Wimplicit-function-declaration
 
@@ -24,7 +29,7 @@ config.h:
 	@cp config.def.h $@
 
 ${EXEC}: ${OBJS}
-	${CC} ${LDFLAGS} -o ${EXEC} ${OBJS}
+	${CC} -o ${EXEC} ${OBJS} ${LDFLAGS}
 	${STRIP} -s ${EXEC}
 
 debug: ${EXEC}
@@ -37,5 +42,8 @@ clean:
 install: bar
 	test -d ${DESTDIR}${BINDIR} || mkdir -p ${DESTDIR}${BINDIR}
 	install -m755 bar ${DESTDIR}${BINDIR}/bar
+
+uninstall:
+	rm -f ${DESTDIR}${BINDIR}/bar
 
 .PHONY: all debug clean install
